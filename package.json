@@ -1,0 +1,13 @@
+{
+  "name": "portfolio-llm-demo",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "devDependencies": {
+    "vercel": "^41.0.0"
+  }
+}
