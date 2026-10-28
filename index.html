@@ -59,7 +59,7 @@
               <div class="insight-item"><strong>02 / Concentration</strong><p>Your largest single position is VTI at 24% of the portfolio. Review overlap across broad-market funds before adding more US equity exposure.</p></div>
               <div class="insight-item"><strong>03 / Balance</strong><p>International equities add geographic breadth. Bond duration, fund fees, tax status and your time horizon are not modeled in this demo.</p></div>
               <div class="disclaimer">Illustrative analysis only. Demo figures are fictional; this is not personalized financial advice or a recommendation to trade.</div>
-              <form class="question" id="questionForm"><input id="questionInput" aria-label="Ask about the portfolio" placeholder="Ask about this portfolio..." autocomplete="off"><button type="submit">Ask &rarr;</button></form><div class="question-answer" id="questionAnswer" aria-live="polite"></div>
+              <form class="question" id="questionForm"><input id="questionInput" aria-label="Ask about the portfolio" placeholder="Ask about this portfolio..." autocomplete="off" maxlength="500" required><button type="submit">Ask &rarr;</button></form><div class="question-answer" id="questionAnswer" aria-live="polite" role="status"></div>
             </div>
           </section>
           <section class="panel"><div class="panel-head"><div><div class="panel-title">Risk snapshot</div><div class="panel-caption">Illustrative trailing 12 months</div></div></div><div style="padding:0 18px 17px;display:grid;gap:15px">
@@ -117,13 +117,15 @@
       const input=document.querySelector('#questionInput'),answer=document.querySelector('#questionAnswer'),button=event.currentTarget.querySelector('button'),question=input.value.trim();
       if(!question||button.disabled)return;
       button.disabled=true;button.textContent='Thinking...';answer.textContent='Analyzing the fictional portfolio...';answer.classList.add('visible');
+      const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
       try{
-        const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question})});
+        const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question}),signal:controller.signal});
         const result=await response.json().catch(()=>({error:'Analysis service returned an invalid response.'}));
         if(!response.ok)throw new Error(result.error||'Analysis is temporarily unavailable.');
-        answer.textContent=result.answer;input.value='';
-      }catch(error){answer.textContent=error.message||'Could not reach the analysis service. Please try again.';}
-      finally{button.disabled=false;button.textContent='Ask →';}
+        if(typeof result.answer!=='string'||!result.answer.trim())throw new Error('Analysis service returned an empty response.');
+        answer.textContent=result.answer.trim();input.value='';
+      }catch(error){answer.textContent=error.name==='AbortError'?'The request took too long. Please try again.':error.message||'Could not reach the analysis service. Please try again.';}
+      finally{clearTimeout(timeout);button.disabled=false;button.textContent='Ask →';}
     });
   </script>
 </body>
