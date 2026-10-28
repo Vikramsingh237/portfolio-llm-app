@@ -1,13 +1,14 @@
 {
   "name": "portfolio-llm-demo",
   "private": true,
-  "engines": {
-    "node": ">=20"
-  },
+  "engines": { "node": ">=20" },
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "check": "node --check api/analyze.js"
   },
-  "devDependencies": {
-    "vercel": "^41.0.0"
+  "devDependencies": { "vercel": "^41.0.0" },
+  "dependencies": {
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.3"
   }
 }
